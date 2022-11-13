@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  node1:
+    image: nickadam/ucarp-docker:v1.0.0
+    build: .
+    networks:
+      hostnet: {}
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    environment:
+      VIP: 10.10.10.12
+      HOST_IP: 10.10.10.10
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.labels.ucarp == node1]
+
+  node2:
+    image: nickadam/ucarp-docker:v1.0.0
+    networks:
+      hostnet: {}
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    environment:
+      VIP: 10.10.10.12
+      HOST_IP: 10.10.10.11
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.labels.ucarp == node2]
+
+  latest-tag:
+    image: nickadam/ucarp-docker:latest
+    build: .
+    entrypoint: tini --
+    command: sleep 86400
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.labels.ucarp == just_for_creating_the_latest_tag]
+
+networks:
+  hostnet:
+    external: true
+    name: host
